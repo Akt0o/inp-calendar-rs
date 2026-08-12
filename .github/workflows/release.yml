@@ -1,0 +1,67 @@
+name: Release
+on:
+  push:
+    tags: ["v*"]
+permissions: { contents: read }
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - id: version
+        env: { TAG: "${{ github.ref_name }}" }
+        run: |
+          python3 - <<'PY'
+          import os, re, subprocess, sys
+          tag = os.environ["TAG"]
+          pattern = re.compile(r"^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z.-]+))?$")
+          def key(value):
+              match = pattern.fullmatch(value)
+              if not match: return None
+              major, minor, patch = map(int, match.group(1, 2, 3)); pre = match.group(4)
+              return (major, minor, patch, (1,) if pre is None else (0, tuple((0, int(x)) if x.isdigit() else (1, x) for x in pre.split('.'))))
+          current = key(tag)
+          if current is None: sys.exit(f"Tag semver invalide: {tag}")
+          others = [key(t) for t in subprocess.check_output(["git", "tag", "--list"], text=True).split() if t != tag]
+          if any(value is not None and value >= current for value in others): sys.exit("Le tag doit être strictement supérieur aux versions existantes")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              out.write(f"version={tag[1:]}\nprerelease={'true' if '-' in tag else 'false'}\n")
+          PY
+  release:
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions: { contents: write, packages: write, id-token: write, attestations: write }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with: { registry: ghcr.io, username: "${{ github.actor }}", password: "${{ secrets.GITHUB_TOKEN }}" }
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+            type=raw,value=latest,enable=${{ needs.verify.outputs.prerelease == 'false' }}
+      - id: build
+        uses: docker/build-push-action@v6
+        with: { context: ., push: true, tags: "${{ steps.meta.outputs.tags }}", labels: "${{ steps.meta.outputs.labels }}", provenance: mode=max, sbom: true }
+      - uses: aquasecurity/trivy-action@0.28.0
+        with: { image-ref: "ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}", severity: "CRITICAL", ignore-unfixed: true, exit-code: "1" }
+      - uses: anchore/sbom-action@v0
+        with: { image: "ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}", format: spdx-json, output-file: sbom.spdx.json, upload-artifact: false }
+      - uses: actions/attest-build-provenance@v2
+        if: github.event.repository.visibility == 'public'
+        with: { subject-name: "ghcr.io/${{ github.repository }}", subject-digest: "${{ steps.build.outputs.digest }}", push-to-registry: true }
+      - uses: actions/attest-sbom@v2
+        if: github.event.repository.visibility == 'public'
+        with: { subject-name: "ghcr.io/${{ github.repository }}", subject-digest: "${{ steps.build.outputs.digest }}", sbom-path: sbom.spdx.json, push-to-registry: true }
+      - uses: softprops/action-gh-release@v2
+        with: { generate_release_notes: true, prerelease: "${{ needs.verify.outputs.prerelease == 'true' }}", files: sbom.spdx.json }

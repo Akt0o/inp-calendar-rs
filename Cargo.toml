@@ -1,0 +1,33 @@
+[package]
+name = "inp-calendar-bot"
+version = "0.1.0"
+edition = "2021"
+description = "Bot Discord de publication d'un emploi du temps"
+license = "MIT"
+rust-version = "1.87"
+
+[dependencies]
+serenity = { version = "0.12", default-features = false, features = ["builder", "cache", "client", "gateway", "http", "model", "chrono", "rustls_backend"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "signal", "time", "fs", "sync"] }
+sqlx = { version = "0.9", default-features = false, features = ["runtime-tokio", "sqlite", "macros", "migrate"] }
+reqwest = { version = "0.13", default-features = false, features = ["rustls", "charset", "http2"] }
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+chrono-tz = "0.10"
+icalendar = "0.17"
+image = { version = "0.25", default-features = false, features = ["png"] }
+imageproc = { version = "0.27", default-features = false, features = ["text"] }
+ab_glyph = "0.2"
+dotenvy = "0.15"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+thiserror = "2"
+anyhow = "1"
+rand = "0.9"
+sha2 = "0.10"
+
+[dev-dependencies]
+tempfile = "3"
+
+[profile.release]
+lto = "thin"
+strip = true
