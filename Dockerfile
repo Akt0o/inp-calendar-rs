@@ -9,7 +9,7 @@ RUN cargo build --locked --release
 
 FROM debian:bookworm-slim AS runtime
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates tzdata \
+    && apt-get install -y --no-install-recommends ca-certificates libssl3 tzdata \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=builder /build/target/release/inp-calendar-bot /usr/local/bin/inp-calendar-bot
