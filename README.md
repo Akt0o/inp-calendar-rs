@@ -4,7 +4,7 @@ Bot Discord en Rust qui récupère un calendrier ICS, génère les vues du jour 
 
 ## Configuration
 
-Copier `.env.example` vers `.env`, puis renseigner `TOKEN`, `CALENDAR_USERNAME`, `CALENDAR_PASSWORD` et `CALENDAR_URL`. Les autres variables ont des valeurs par défaut.
+Copier `.env.example` vers `.env`, puis renseigner `TOKEN`, `CALENDAR_USERNAME`, `CALENDAR_PASSWORD` et `CALENDAR_URL`. Les autres variables ont des valeurs par défaut (cf code).
 
 Le bot doit être invité avec les scopes `bot` et `applications.commands`, ainsi que les permissions de lecture/écriture des salons, gestion des messages et gestion des rôles.
 
