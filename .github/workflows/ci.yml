@@ -45,9 +45,9 @@ jobs:
     permissions: { contents: read, security-events: write }
     steps:
       - uses: actions/checkout@v4
-      - uses: github/codeql-action/init@v3
+      - uses: github/codeql-action/init@v4
         with: { languages: rust, build-mode: none }
-      - uses: github/codeql-action/analyze@v3
+      - uses: github/codeql-action/analyze@v4
   image:
     runs-on: ubuntu-latest
     permissions: { contents: read, security-events: write }
@@ -59,7 +59,7 @@ jobs:
       - run: docker run --rm --entrypoint sh inp-calendar-bot:ci -c 'test -x /usr/local/bin/inp-calendar-bot'
       - uses: aquasecurity/trivy-action@v0.36.0
         with: { image-ref: "inp-calendar-bot:ci", format: sarif, output: trivy.sarif, severity: "CRITICAL,HIGH,MEDIUM" }
-      - uses: github/codeql-action/upload-sarif@v3
+      - uses: github/codeql-action/upload-sarif@v4
         if: github.event.repository.visibility == 'public'
         continue-on-error: true
         with: { sarif_file: trivy.sarif, category: trivy-image }
