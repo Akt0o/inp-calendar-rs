@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 description = "Bot Discord de publication d'un emploi du temps"
 license = "MIT"
-rust-version = "1.87"
+rust-version = "1.94"
 
 [dependencies]
 serenity = { version = "0.12", default-features = false, features = ["builder", "cache", "client", "gateway", "http", "model", "chrono", "rustls_backend"] }

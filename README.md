@@ -36,6 +36,8 @@ Les commandes d'administration requièrent la permission `Gérer les rôles`. Le
 
 ## Développement
 
+Le projet nécessite Rust 1.94 ou une version ultérieure.
+
 ```bash
 cargo fmt --check
 cargo clippy --all-targets --all-features -- -D warnings
