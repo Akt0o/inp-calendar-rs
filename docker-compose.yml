@@ -1,7 +1,7 @@
 services:
   calendar-bot:
     build: .
-    image: ghcr.io/akt0o/inp-calendar-bot:latest
+    image: ghcr.io/akt0o/inp-calendar-rs:latest
     env_file: .env
     environment:
       DATA_DIR: /app/data
