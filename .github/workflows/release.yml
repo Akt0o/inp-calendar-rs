@@ -53,7 +53,7 @@ jobs:
       - id: build
         uses: docker/build-push-action@v6
         with: { context: ., push: true, tags: "${{ steps.meta.outputs.tags }}", labels: "${{ steps.meta.outputs.labels }}", provenance: mode=max, sbom: true }
-      - uses: aquasecurity/trivy-action@0.28.0
+      - uses: aquasecurity/trivy-action@v0.36.0
         with: { image-ref: "ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}", severity: "CRITICAL", ignore-unfixed: true, exit-code: "1" }
       - uses: anchore/sbom-action@v0
         with: { image: "ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}", format: spdx-json, output-file: sbom.spdx.json, upload-artifact: false }

@@ -57,13 +57,13 @@ jobs:
       - uses: docker/build-push-action@v6
         with: { context: ., load: true, tags: inp-calendar-bot:ci }
       - run: docker run --rm --entrypoint sh inp-calendar-bot:ci -c 'test -x /usr/local/bin/inp-calendar-bot'
-      - uses: aquasecurity/trivy-action@0.28.0
+      - uses: aquasecurity/trivy-action@v0.36.0
         with: { image-ref: "inp-calendar-bot:ci", format: sarif, output: trivy.sarif, severity: "CRITICAL,HIGH,MEDIUM" }
       - uses: github/codeql-action/upload-sarif@v3
         if: github.event.repository.visibility == 'public'
         continue-on-error: true
         with: { sarif_file: trivy.sarif, category: trivy-image }
-      - uses: aquasecurity/trivy-action@0.28.0
+      - uses: aquasecurity/trivy-action@v0.36.0
         with: { image-ref: "inp-calendar-bot:ci", severity: "CRITICAL", ignore-unfixed: true, exit-code: "1" }
       - uses: anchore/sbom-action@v0
         with: { image: "inp-calendar-bot:ci", format: spdx-json, output-file: sbom.spdx.json }
