@@ -5,7 +5,7 @@ use std::time::{Duration, SystemTime};
 
 use anyhow::{anyhow, Result};
 use chrono::Duration as ChronoDuration;
-use rand::Rng;
+use rand::RngExt;
 use serenity::all::*;
 
 use crate::app::App;

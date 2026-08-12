@@ -5,15 +5,13 @@ COPY Cargo.toml Cargo.lock ./
 COPY migrations ./migrations
 COPY assets ./assets
 COPY src ./src
-RUN cargo build --locked --release
+RUN cargo build --locked --release \
+    && mkdir /build/data
 
-FROM debian:bookworm-slim AS runtime
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates libssl3 tzdata \
-    && rm -rf /var/lib/apt/lists/*
+FROM gcr.io/distroless/cc-debian12:nonroot AS runtime
 WORKDIR /app
 COPY --from=builder /build/target/release/inp-calendar-bot /usr/local/bin/inp-calendar-bot
-COPY --from=builder /build/assets ./assets
+COPY --from=builder --chown=65532:65532 /build/data /app/data
 ENV DATA_DIR=/app/data TZ=Europe/Paris
 VOLUME ["/app/data"]
-ENTRYPOINT ["inp-calendar-bot"]
+ENTRYPOINT ["/usr/local/bin/inp-calendar-bot"]

@@ -43,7 +43,10 @@ pub async fn run_once(http: Arc<Http>, app: Arc<App>) -> Result<()> {
         .then(|| ics::compare_changes(&old_events, &new_events, today))
         .flatten();
     let unix = Utc::now().timestamp();
-    let hash = format!("{:x}", Sha256::digest(content.as_bytes()));
+    let hash = Sha256::digest(content.as_bytes())
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>();
     crate::db::set_calendar_state(&app.pool, &content, &hash, unix).await?;
     tokio::fs::create_dir_all(&app.config.data_dir).await?;
     atomic_write(&app.config.data_dir.join("current.ics"), content.as_bytes()).await?;
